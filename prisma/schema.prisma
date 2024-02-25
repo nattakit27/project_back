@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique @db.VarChar(150)
+  password     String        @db.VarChar(72)
+  firstname    String
+  lastname     String
+  idcard       String
+  phone        String
+  email        String?
+  age          String
+  reservations Reservation[]
+  dutys        Duty[]
+  provinces    Province[]
+
+  @@map("users")
+}
+
+model Reservation {
+  id              Int              @id @default(autoincrement())
+  firstname       String
+  lastname        String
+  idcard          String
+  sex             String
+  list            String
+  date            DateTime
+  User            User?            @relation(fields: [user_id], references: [id])
+  user_id         Int?
+  booking_bas     Booking_ba[]
+  treatment_types Treatment_type[]
+}
+
+model Booking_ba {
+  ba_id          Int          @id @default(autoincrement())
+  doctor_id      Int
+  status         String?
+  ordinal        String?
+  Reservations   Reservation? @relation(fields: [reservation_id], references: [id])
+  reservation_id Int?
+}
+
+model Duty {
+  duty_id       Int     @id @default(autoincrement())
+  duty_name     String?
+  duty_password String?
+  User          User?   @relation(fields: [user_id], references: [id])
+  user_id       Int?
+}
+
+model Treatment_type {
+  treatment_id   Int          @id @default(autoincrement())
+  treatment_name String?
+  Reservations   Reservation? @relation(fields: [reservation_id], references: [id])
+  reservation_id Int?
+}
+
+model Province {
+  pv_id         Int            @id @default(autoincrement())
+  pv_name       String
+  User          User?          @relation(fields: [user_id], references: [id])
+  user_id       Int?
+  districts     District[]
+  sub_districts Sub_district[]
+}
+
+model District {
+  dist_id       Int            @id @default(autoincrement())
+  dist_name     String
+  Province      Province?      @relation(fields: [pv_id], references: [pv_id])
+  pv_id         Int?
+  sub_districts Sub_district[]
+}
+
+model Sub_district {
+  sdt_id   Int       @id @default(autoincrement())
+  sdt_name String
+  Province Province? @relation(fields: [pv_id], references: [pv_id])
+  pv_id    Int?
+  District District? @relation(fields: [dist_id], references: [dist_id])
+  dist_id  Int?
+}
